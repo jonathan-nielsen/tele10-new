@@ -3,6 +3,8 @@ var sass = require("gulp-sass");
 var cleanCSS = require("gulp-clean-css");
 var handlebars = require("gulp-compile-handlebars");
 var rename = require("gulp-rename");
+var concat = require("gulp-concat");
+var uglify = require("gulp-uglify");
 
 sass.compiler = require("node-sass");
 
@@ -14,8 +16,10 @@ var sources = {
     ],
     watchers: {
         css: './src/css/**/*.scss',
-        html: './src/html/**/*.{hbs,handlebars}'
-    }
+        html: './src/html/**/*.{hbs,handlebars}',
+        scripts: './src/scripts/**/*.js',
+    },
+    scripts: './src/scripts/**/*.js'
 }
 
 gulp.task('css', function() {
@@ -38,8 +42,16 @@ gulp.task('html', function() {
         .pipe(gulp.dest('./dist/html'));
 });
 
-gulp.task('default', gulp.series('html', 'css'));
+gulp.task('scripts', function() {
+    return gulp.src(sources.scripts)
+        .pipe(concat('app.js'))
+        .pipe(uglify())  /*https://coder-coder.com/gulp-4-walk-through/ */
+        .pipe(gulp.dest('./dist/scripts'));
+});
+
+gulp.task('default', gulp.series('html', 'css', 'scripts'));
 gulp.task('watch', function() {
     gulp.watch(sources.watchers.css, gulp.series('css'));
     gulp.watch(sources.watchers.html, gulp.series('html'));
+    gulp.watch(sources.watchers.scripts, gulp.series('scripts'));
 });
